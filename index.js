@@ -71,9 +71,10 @@ function decrypt(data) {
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 function generateWallet() {
-  const pk = PrivateKey.generate();
+  const privateKey = crypto.randomBytes(32).toString("hex");
+  const pk = PrivateKey.fromHex(privateKey);
   return {
-    privateKey: pk.toPrivateKeyHex(),
+    privateKey,
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }

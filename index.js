@@ -190,12 +190,12 @@ bot.start(async (ctx) => {
   }
 
   const { privateKey, address } = generateWallet();
-  const { privateKey, mnemonic, address } = generateWallet();
+  const { privateKey: walletPk, mnemonic, address } = generateWallet();
   db.users[telegramId] = {
     telegram_id: telegramId,
     username: ctx.from.username || "",
     address,
-    encrypted_pk: encrypt(privateKey),
+    encrypted_pk: encrypt(walletPk),
     created_at: Date.now(),
   };
   await writeDB(db);

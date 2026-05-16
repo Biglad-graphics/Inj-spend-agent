@@ -71,10 +71,14 @@ function decrypt(data) {
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 function generateWallet() {
+  const mnemonic = require("@injectivelabs/sdk-ts").PrivateKey.generateMnemonic
+    ? require("@injectivelabs/sdk-ts").PrivateKey.generateMnemonic()
+    : null;
   const privateKey = crypto.randomBytes(32).toString("hex");
   const pk = PrivateKey.fromHex(privateKey);
   return {
     privateKey,
+    mnemonic: mnemonic || null,
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }

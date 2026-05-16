@@ -73,7 +73,7 @@ function decrypt(data) {
 function generateWallet() {
   const pk = PrivateKey.generate();
   return {
-    privateKey: pk.toHex(),
+    privateKey: pk.toPrivateKeyHex(),
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }

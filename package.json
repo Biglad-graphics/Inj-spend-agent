@@ -12,7 +12,7 @@
     "@injectivelabs/networks": "^1.14.0",
     "@injectivelabs/sdk-ts": "^1.14.0",
     "@injectivelabs/utils": "^1.14.0",
-    "better-sqlite3": "^9.4.3",
+    "lowdb": "^3.0.0",
     "dotenv": "^16.4.5",
     "node-cron": "^3.0.3",
     "telegraf": "^4.16.3"

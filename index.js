@@ -628,6 +628,55 @@ function registerCronJob(telegramId, scheduleId, cronExpr, toAddress, amountInj,
   activeCronJobs[jobKey] = task;
 }
 
+// One-time send polling every minute
+cron.schedule("* * * * *", async () => {
+  const db = await readDB();
+  const now = Date.now();
+  const pending = db.one_time_sends
+    ? db.one_time_sends.filter((s) => s.active && new Date(s.send_at).getTime() <= now)
+    : [];
+
+  for (const job of pending) {
+    const user = db.users[job.telegram_id];
+    if (!user) {
+      job.active = false;
+      continue;
+    }
+    const bal = await getBalance(user.address);
+    if (bal < job.amount_inj) {
+      bot.telegram.sendMessage(
+        job.telegram_id,
+        `⚠️ Scheduled send failed: not enough balance.\nNeed ${job.amount_inj} INJ, have ${bal.toFixed(4)} INJ.`
+      );
+      job.active = false;
+      continue;
+    }
+    try {
+      const pk = decrypt(user.encrypted_pk);
+      const txHash = await sendInj(pk, job.to_address, job.amount_inj);
+      job.active = false;
+      db.tx_log.push({
+        telegram_id: job.telegram_id, type: "one-time send",
+        to_address: job.to_address, amount_inj: job.amount_inj,
+        tx_hash: txHash, status: "success", created_at: Date.now()
+      });
+      bot.telegram.sendMessage(
+        job.telegram_id,
+        `✅ One-time send executed!\n${job.amount_inj} INJ sent to ${job.to_address.slice(0, 20)}...\nhttps://explorer.injective.network/transaction/${txHash}`
+      );
+    } catch (e) {
+      job.active = false;
+      db.tx_log.push({
+        telegram_id: job.telegram_id, type: "one-time send",
+        to_address: job.to_address, amount_inj: job.amount_inj,
+        status: "failed", note: e.message, created_at: Date.now()
+      });
+      bot.telegram.sendMessage(job.telegram_id, `❌ One-time send failed: ${e.message}`);
+    }
+  }
+  if (pending.length > 0) await writeDB(db);
+});
+
 // Alert polling every 5 minutes
 cron.schedule("*/5 * * * *", async () => {
   const db = await readDB();

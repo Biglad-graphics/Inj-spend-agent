@@ -71,14 +71,25 @@ function decrypt(data) {
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 function generateWallet() {
-  const mnemonic = require("@injectivelabs/sdk-ts").PrivateKey.generateMnemonic
-    ? require("@injectivelabs/sdk-ts").PrivateKey.generateMnemonic()
-    : null;
-  const privateKey = crypto.randomBytes(32).toString("hex");
+  const mnemonic = bip39.generateMnemonic();
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  const privateKey = seed.slice(0, 32).toString("hex");
   const pk = PrivateKey.fromHex(privateKey);
   return {
     privateKey,
-    mnemonic: mnemonic || null,
+    mnemonic,
+    address: pk.toPublicKey().toAddress().toBech32(),
+  };
+}
+
+function walletFromMnemonic(mnemonic) {
+  if (!bip39.validateMnemonic(mnemonic)) throw new Error("Invalid seed phrase");
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  const privateKey = seed.slice(0, 32).toString("hex");
+  const pk = PrivateKey.fromHex(privateKey);
+  return {
+    privateKey,
+    mnemonic,
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }

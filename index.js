@@ -100,7 +100,7 @@ const bankApi = new ChainGrpcBankApi(ENDPOINTS.grpc);
 async function getBalance(address) {
   try {
     const bal = await bankApi.fetchBalance({ accountAddress: address, denom: INJ_DENOM });
-    return parseFloat(new BigNumberInBase(bal.amount).toWei(INJ_DECIMALS).toNumber() / 1e18);
+    return parseFloat(bal.amount) / 1e18;
   } catch {
     return 0;
   }

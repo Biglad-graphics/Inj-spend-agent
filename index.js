@@ -16,7 +16,6 @@ const { Network, getNetworkEndpoints } = require("@injectivelabs/networks");
 const { BigNumberInBase } = require("@injectivelabs/utils");
 const Anthropic = require("@anthropic-ai/sdk");
 const cron = require("node-cron");
-const Database = require("better-sqlite3");
 const crypto = require("crypto");
 
 // ─── Config ───────────────────────────────────────────────────────────────────

@@ -492,6 +492,37 @@ bot.on("text", async (ctx) => {
       break;
     }
 
+      case "one_time_send": {
+  if (!intent.to || !intent.amount || !intent.send_at) {
+    return ctx.reply('Please specify address, amount and time.\nE.g. "Send 2 INJ to inj1... at 9am tomorrow"');
+  }
+  if (!intent.to.startsWith("inj1")) return ctx.reply("Invalid address.");
+
+  const sendAt = new Date(intent.send_at);
+  if (isNaN(sendAt.getTime())) return ctx.reply("Could not understand that time. Try: 'at 9am tomorrow' or 'in 2 hours'.");
+
+  if (!db.one_time_sends) db.one_time_sends = [];
+  const jobId = Date.now();
+  db.one_time_sends.push({
+    id: jobId,
+    telegram_id: telegramId,
+    to_address: intent.to,
+    amount_inj: intent.amount,
+    send_at: sendAt.toISOString(),
+    active: true,
+    created_at: Date.now(),
+  });
+  await writeDB(db);
+
+  ctx.reply(
+    `✅ One-time send scheduled!\n\n` +
+    `${intent.amount} INJ to ${intent.to.slice(0, 20)}...\n` +
+    `Sends at: ${sendAt.toLocaleString()}\n\n` +
+    `The bot will execute this automatically.`
+  );
+  break;
+      }
+      
     case "set_alert": {
       if (!intent.threshold) return ctx.reply('Try: "Alert me when balance drops below 5 INJ"');
       const alertId = Date.now();

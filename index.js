@@ -219,6 +219,41 @@ bot.start(async (ctx) => {
   );
 
 // /wallet
+  // /import
+bot.command("import", async (ctx) => {
+  const telegramId = String(ctx.from.id);
+  const parts = ctx.message.text.split(" ");
+  parts.shift();
+  const mnemonic = parts.join(" ").trim();
+
+  if (!mnemonic || parts.length < 12) {
+    return ctx.reply(
+      "Send your 12-word seed phrase like this:\n\n/import word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
+    );
+  }
+
+  try {
+    const { privateKey, address } = walletFromMnemonic(mnemonic);
+    const db = await readDB();
+
+    db.users[telegramId] = {
+      telegram_id: telegramId,
+      username: ctx.from.username || "",
+      address,
+      encrypted_pk: encrypt(privateKey),
+      created_at: Date.now(),
+    };
+    await writeDB(db);
+
+    ctx.replyWithMarkdown(
+      `*Wallet Imported!*\n\n` +
+      `Address: \`${address}\`\n\n` +
+      `*Delete your seed phrase message immediately for security.*`
+    );
+  } catch (e) {
+    ctx.reply(`Failed to import: ${e.message}`);
+  }
+});
 bot.command("wallet", async (ctx) => {
   const db = await readDB();
   const user = db.users[String(ctx.from.id)];

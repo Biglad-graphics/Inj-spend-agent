@@ -166,8 +166,11 @@ async function parseIntent(userMessage) {
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: `Current time: ${now}\n\nUser message: ${userMessage}` }],
     });
-    return JSON.parse(response.content[0].text.trim());
-  } catch {
+    const raw = response.content[0].text.trim();
+    console.log("AI INTENT:", raw);
+    return JSON.parse(raw);
+  } catch (e) {
+    console.log("PARSE ERROR:", e.message);
     return { intent: "unknown" };
   }
 }

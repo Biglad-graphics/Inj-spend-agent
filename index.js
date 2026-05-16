@@ -255,6 +255,23 @@ bot.command("import", async (ctx) => {
   }
 });
 
+// /seedphrase
+bot.command("seedphrase", async (ctx) => {
+  const telegramId = String(ctx.from.id);
+  const db = await readDB();
+  const user = db.users[telegramId];
+  if (!user) return ctx.reply("Use /start first.");
+
+  ctx.replyWithMarkdown(
+    `🔑 *Your Seed Phrase*\n\n` +
+    `The bot does not store your seed phrase — it was shown once when your wallet was created.\n\n` +
+    `To recover your wallet, use the private key instead:\n\n` +
+    `\`${decrypt(user.encrypted_pk)}\`\n\n` +
+    `⚠️ *Delete this message immediately after saving.*\n` +
+    `Never share this with anyone.`
+  );
+});
+
 // /wallet
 bot.command("wallet", async (ctx) => {
   const db = await readDB();

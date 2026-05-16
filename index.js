@@ -159,17 +159,19 @@ INJ addresses start with "inj1". Amount is always in INJ.`;
 
 async function parseIntent(userMessage) {
   try {
+    const now = new Date().toISOString();
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 300,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
+      messages: [{ role: "user", content: `Current time: ${now}\n\nUser message: ${userMessage}` }],
     });
     return JSON.parse(response.content[0].text.trim());
   } catch {
     return { intent: "unknown" };
   }
 }
+
 
 // ─── Inline keyboard ──────────────────────────────────────────────────────────
 const MAIN_MENU = {

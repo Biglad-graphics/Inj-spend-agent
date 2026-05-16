@@ -14,7 +14,7 @@ const { BigNumberInBase } = require("@injectivelabs/utils");
 const Anthropic = require("@anthropic-ai/sdk");
 const cron = require("node-cron");
 const crypto = require("crypto");
-
+const bip39 = require("bip39");
 // ─── Config ───────────────────────────────────────────────────────────────────
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;

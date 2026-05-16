@@ -1,1 +1,26 @@
-
+{
+  "name": "inj-spend-agent",
+  "version": "1.0.0",
+  "description": "Autonomous INJ Spend Agent — Telegram Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@injectivelabs/networks": "^1.14.0",
+    "@injectivelabs/sdk-ts": "^1.14.0",
+    "@injectivelabs/utils": "^1.14.0",
+    "better-sqlite3": "^9.4.3",
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

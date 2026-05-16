@@ -33,8 +33,6 @@ if (!BOT_TOKEN || !ANTHROPIC_API_KEY || !ENCRYPTION_KEY) {
 }
 
 // ─── Database ─────────────────────────────────────────────────────────────────
-const db = new Database("agent.db");
-
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     telegram_id   TEXT PRIMARY KEY,

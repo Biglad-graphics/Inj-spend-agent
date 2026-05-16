@@ -15,6 +15,7 @@ const Anthropic = require("@anthropic-ai/sdk");
 const cron = require("node-cron");
 const crypto = require("crypto");
 const bip39 = require("bip39");
+
 // ─── Config ───────────────────────────────────────────────────────────────────
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -71,25 +72,24 @@ function decrypt(data) {
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 function generateWallet() {
-  const mnemonic = bip39.generateMnemonic();
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const privateKey = seed.slice(0, 32).toString("hex");
-  const pk = PrivateKey.fromHex(privateKey);
+  const walletMnemonic = bip39.generateMnemonic();
+  const seed = bip39.mnemonicToSeedSync(walletMnemonic);
+  const walletPk = seed.slice(0, 32).toString("hex");
+  const pk = PrivateKey.fromHex(walletPk);
   return {
-    privateKey,
-    mnemonic,
+    privateKey: walletPk,
+    mnemonic: walletMnemonic,
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }
 
-function walletFromMnemonic(mnemonic) {
-  if (!bip39.validateMnemonic(mnemonic)) throw new Error("Invalid seed phrase");
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const privateKey = seed.slice(0, 32).toString("hex");
-  const pk = PrivateKey.fromHex(privateKey);
+function walletFromMnemonic(inputMnemonic) {
+  if (!bip39.validateMnemonic(inputMnemonic)) throw new Error("Invalid seed phrase");
+  const seed = bip39.mnemonicToSeedSync(inputMnemonic);
+  const walletPk = seed.slice(0, 32).toString("hex");
+  const pk = PrivateKey.fromHex(walletPk);
   return {
-    privateKey,
-    mnemonic,
+    privateKey: walletPk,
     address: pk.toPublicKey().toAddress().toBech32(),
   };
 }
@@ -189,20 +189,20 @@ bot.start(async (ctx) => {
     );
   }
 
-  const { privateKey, address } = generateWallet();
-  const { privateKey: walletPk, mnemonic, address } = generateWallet();
+  const newWallet = generateWallet();
+
   db.users[telegramId] = {
     telegram_id: telegramId,
     username: ctx.from.username || "",
-    address,
-    encrypted_pk: encrypt(walletPk),
+    address: newWallet.address,
+    encrypted_pk: encrypt(newWallet.privateKey),
     created_at: Date.now(),
   };
   await writeDB(db);
 
   await ctx.replyWithMarkdown(
-    `*INJ Spend Agent activated!*\n\n` +
-    `Your INJ wallet:\n\`${address}\`\n\n` +
+    `⚡ *INJ Spend Agent activated!*\n\n` +
+    `Your INJ wallet:\n\`${newWallet.address}\`\n\n` +
     `Deposit INJ to this address to get started.\n\n` +
     `Then just type naturally:\n` +
     `_"Send 2 INJ to inj1... every Friday"_\n` +
@@ -211,64 +211,67 @@ bot.start(async (ctx) => {
   );
 
   return ctx.replyWithMarkdown(
-    `*Your Seed Phrase*\n\n` +
-    `\`${mnemonic}\`\n\n` +
-    `*Save these 12 words somewhere safe and delete this message.*\n` +
+    `🔑 *Your Seed Phrase*\n\n` +
+    `\`${newWallet.mnemonic}\`\n\n` +
+    `⚠️ *Save these 12 words somewhere safe and delete this message.*\n` +
     `Anyone with this phrase can access your wallet.\n` +
     `The bot does NOT store your seed phrase.`
   );
+});
 
-// /wallet
-  // /import
+// /import
 bot.command("import", async (ctx) => {
   const telegramId = String(ctx.from.id);
   const parts = ctx.message.text.split(" ");
   parts.shift();
-  const mnemonic = parts.join(" ").trim();
+  const inputMnemonic = parts.join(" ").trim();
 
-  if (!mnemonic || parts.length < 12) {
+  if (!inputMnemonic || parts.length < 12) {
     return ctx.reply(
       "Send your 12-word seed phrase like this:\n\n/import word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
     );
   }
 
   try {
-    const { privateKey, address } = walletFromMnemonic(mnemonic);
+    const imported = walletFromMnemonic(inputMnemonic);
     const db = await readDB();
 
     db.users[telegramId] = {
       telegram_id: telegramId,
       username: ctx.from.username || "",
-      address,
-      encrypted_pk: encrypt(privateKey),
+      address: imported.address,
+      encrypted_pk: encrypt(imported.privateKey),
       created_at: Date.now(),
     };
     await writeDB(db);
 
     ctx.replyWithMarkdown(
-      `*Wallet Imported!*\n\n` +
-      `Address: \`${address}\`\n\n` +
-      `*Delete your seed phrase message immediately for security.*`
+      `✅ *Wallet Imported!*\n\n` +
+      `Address: \`${imported.address}\`\n\n` +
+      `⚠️ *Delete your seed phrase message immediately for security.*`
     );
   } catch (e) {
     ctx.reply(`Failed to import: ${e.message}`);
   }
 });
+
+// /wallet
 bot.command("wallet", async (ctx) => {
   const db = await readDB();
   const user = db.users[String(ctx.from.id)];
   if (!user) return ctx.reply("Use /start first.");
   const bal = await getBalance(user.address);
   ctx.replyWithMarkdown(
-    `*Your Wallet*\n\nAddress: \`${user.address}\`\nBalance: *${bal.toFixed(4)} INJ*`
+    `🏦 *Your Wallet*\n\nAddress: \`${user.address}\`\nBalance: *${bal.toFixed(4)} INJ*`
   );
 });
 
 // /help
 bot.command("help", (ctx) => {
   ctx.replyWithMarkdown(
-    `*INJ Spend Agent*\n\n` +
-    `*Wallet*\n/wallet — address and balance\n/history — transactions\n\n` +
+    `⚡ *INJ Spend Agent*\n\n` +
+    `*Wallet*\n/wallet — address and balance\n/history — transactions\n` +
+    `/import — import existing wallet with seed phrase\n\n` +
     `*Send*\n_"Send 5 INJ to inj1..."_\n_"Pay inj1... 2 INJ now"_\n\n` +
     `*Schedule*\n_"Send 1 INJ to inj1... every Monday"_\n` +
     `/schedules — list schedules\n/cancelschedule id\n\n` +
@@ -286,7 +289,7 @@ bot.command("schedules", async (ctx) => {
   const lines = rows.map((r) =>
     `*#${r.id}* ${r.label || "Payment"}\n  ${r.amount_inj} INJ to \`${r.to_address.slice(0, 16)}...\`\n  ${r.cron_expr}`
   );
-  ctx.replyWithMarkdown(`*Active Schedules*\n\n${lines.join("\n\n")}`);
+  ctx.replyWithMarkdown(`📅 *Active Schedules*\n\n${lines.join("\n\n")}`);
 });
 
 // /cancelschedule
@@ -309,7 +312,7 @@ bot.command("alerts", async (ctx) => {
   const rows = db.alerts.filter((a) => a.telegram_id === telegramId && a.active);
   if (!rows.length) return ctx.reply("No active alerts.");
   const lines = rows.map((r) => `*#${r.id}* Alert when balance drops below *${r.threshold_inj} INJ*`);
-  ctx.replyWithMarkdown(`*Active Alerts*\n\n${lines.join("\n")}`);
+  ctx.replyWithMarkdown(`🔔 *Active Alerts*\n\n${lines.join("\n")}`);
 });
 
 // /cancelalert
@@ -361,7 +364,7 @@ bot.on("text", async (ctx) => {
 
     case "check_balance": {
       const bal = await getBalance(user.address);
-      ctx.replyWithMarkdown(`Balance: *${bal.toFixed(4)} INJ*\n\`${user.address}\``);
+      ctx.replyWithMarkdown(`💰 Balance: *${bal.toFixed(4)} INJ*\n\`${user.address}\``);
       break;
     }
 
@@ -406,30 +409,30 @@ bot.on("text", async (ctx) => {
       if (!intent.to.startsWith("inj1")) return ctx.reply("Invalid address.");
       if (!cron.validate(intent.cron)) return ctx.reply("Could not parse that schedule.");
 
-      const id = Date.now();
+      const schedId = Date.now();
       db.schedules.push({
-        id, telegram_id: telegramId, label: intent.label || "Scheduled Payment",
+        id: schedId, telegram_id: telegramId, label: intent.label || "Scheduled Payment",
         cron_expr: intent.cron, to_address: intent.to, amount_inj: intent.amount,
         active: true, created_at: Date.now(),
       });
       await writeDB(db);
-      registerCronJob(telegramId, id, intent.cron, intent.to, intent.amount, intent.label);
+      registerCronJob(telegramId, schedId, intent.cron, intent.to, intent.amount, intent.label);
       ctx.reply(
-        `Schedule created!\n\n${intent.amount} INJ to ${intent.to.slice(0, 20)}...\n${intent.label || intent.cron}\n\nCancel: /cancelschedule ${id}`
+        `Schedule created!\n\n${intent.amount} INJ to ${intent.to.slice(0, 20)}...\n${intent.label || intent.cron}\n\nCancel: /cancelschedule ${schedId}`
       );
       break;
     }
 
     case "set_alert": {
       if (!intent.threshold) return ctx.reply('Try: "Alert me when balance drops below 5 INJ"');
-      const id = Date.now();
+      const alertId = Date.now();
       db.alerts.push({
-        id, telegram_id: telegramId, type: "below",
+        id: alertId, telegram_id: telegramId, type: "below",
         threshold_inj: intent.threshold, active: true, created_at: Date.now(),
       });
       await writeDB(db);
       ctx.reply(
-        `Alert set! You will be notified when balance drops below ${intent.threshold} INJ.\nCancel: /cancelalert ${id}`
+        `Alert set! You will be notified when balance drops below ${intent.threshold} INJ.\nCancel: /cancelalert ${alertId}`
       );
       break;
     }
@@ -464,7 +467,8 @@ bot.on("text", async (ctx) => {
         "/wallet — address and balance\n" +
         "/schedules — active schedules\n" +
         "/alerts — active alerts\n" +
-        "/history — recent transactions\n\n" +
+        "/history — recent transactions\n" +
+        "/import — import wallet with seed phrase\n\n" +
         "Or just type naturally:\n" +
         '"Send 2 INJ to inj1..."\n' +
         '"Pay inj1... 1 INJ every Monday"\n' +
@@ -479,9 +483,9 @@ bot.on("text", async (ctx) => {
         if (!rows.length) return ctx.reply("No active schedules.");
         return ctx.reply(rows.map((r) => `#${r.id} — ${r.label}`).join("\n") + "\n\nUse: /cancelschedule id");
       }
-      const s = db.schedules.find((s) => s.id === intent.schedule_id && s.telegram_id === telegramId);
-      if (!s) return ctx.reply("Schedule not found.");
-      s.active = false;
+      const sc = db.schedules.find((s) => s.id === intent.schedule_id && s.telegram_id === telegramId);
+      if (!sc) return ctx.reply("Schedule not found.");
+      sc.active = false;
       await writeDB(db);
       ctx.reply("Schedule cancelled.");
       break;
@@ -493,9 +497,9 @@ bot.on("text", async (ctx) => {
         if (!rows.length) return ctx.reply("No active alerts.");
         return ctx.reply(rows.map((r) => `#${r.id} — below ${r.threshold_inj} INJ`).join("\n") + "\n\nUse: /cancelalert id");
       }
-      const a = db.alerts.find((a) => a.id === intent.alert_id && a.telegram_id === telegramId);
-      if (!a) return ctx.reply("Alert not found.");
-      a.active = false;
+      const al = db.alerts.find((a) => a.id === intent.alert_id && a.telegram_id === telegramId);
+      if (!al) return ctx.reply("Alert not found.");
+      al.active = false;
       await writeDB(db);
       ctx.reply("Alert removed.");
       break;

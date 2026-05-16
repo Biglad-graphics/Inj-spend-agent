@@ -143,13 +143,17 @@ Possible intents:
 8. cancel_alert   -> { "intent": "cancel_alert", "alert_id": <number or null> }
 9. tx_history     -> { "intent": "tx_history" }
 10. help          -> { "intent": "help" }
-11. unknown       -> { "intent": "unknown" }
+11. one_time_send -> { "intent": "one_time_send", "to": "<inj address>", "amount": <number>, "send_at": "<ISO datetime string>" }
+12. unknown       -> { "intent": "unknown" }
 
 Cron mappings:
 - "every day at 9am"       -> "0 9 * * *"
 - "every Monday"           -> "0 9 * * 1"
 - "every Friday at 6pm"    -> "0 18 * * 5"
 - "every 1st of the month" -> "0 9 1 * *"
+- "tomorrow at 9am", "tonight at 8pm", "in 2 hours" = one_time_send. Calculate send_at as an ISO 8601 datetime string from now. Assume current time is approximately now.
+- "in X minutes/hours" = one_time_send with send_at = now + that duration
+- one_time_send is for single future sends, schedule_send is for recurring only
 
 INJ addresses start with "inj1". Amount is always in INJ.`;
 

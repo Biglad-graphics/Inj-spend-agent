@@ -190,6 +190,7 @@ bot.start(async (ctx) => {
   }
 
   const { privateKey, address } = generateWallet();
+  const { privateKey, mnemonic, address } = generateWallet();
   db.users[telegramId] = {
     telegram_id: telegramId,
     username: ctx.from.username || "",
@@ -199,7 +200,7 @@ bot.start(async (ctx) => {
   };
   await writeDB(db);
 
-  return ctx.replyWithMarkdown(
+  await ctx.replyWithMarkdown(
     `*INJ Spend Agent activated!*\n\n` +
     `Your INJ wallet:\n\`${address}\`\n\n` +
     `Deposit INJ to this address to get started.\n\n` +
@@ -208,7 +209,14 @@ bot.start(async (ctx) => {
     `_"Alert me if balance drops below 5 INJ"_\n\n` +
     `/help for all commands.`
   );
-});
+
+  return ctx.replyWithMarkdown(
+    `*Your Seed Phrase*\n\n` +
+    `\`${mnemonic}\`\n\n` +
+    `*Save these 12 words somewhere safe and delete this message.*\n` +
+    `Anyone with this phrase can access your wallet.\n` +
+    `The bot does NOT store your seed phrase.`
+  );
 
 // /wallet
 bot.command("wallet", async (ctx) => {

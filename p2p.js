@@ -1,9 +1,8 @@
 // ============================================================
 // InjiPay — P2P Cashout Module (INJ → Naira)
-// Plug into index.js — see integration notes at the bottom
 // ============================================================
 
-const PROFIT_RATE = 0.059;
+const PROFIT_RATE = 0.053;
 const BOT_INJ_WALLET = "inj1t0gw53gp69z9yygdcqdr5399guwqzkyq76qnlz";
 const ADMIN_IDS = ["6090484839", "5675687939"];
 
@@ -47,8 +46,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   });
 
   bot.action(/^p2p_paid_(.+)$/, async (ctx) => {
-    await ctx.telegram.sendMessage(
-  trade.telegram_id,
+    await ctx.answerCbQuery();
     const adminId = String(ctx.from.id);
     if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
 
@@ -63,7 +61,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
     trade.paid_by = adminId;
     await writeDB(db);
 
-    await bot.telegram.sendMessage(
+    await ctx.telegram.sendMessage(
       trade.telegram_id,
       `✅ *Payment Confirmed!*\n\n` +
       `₦${trade.naira_amount.toLocaleString("en-NG")} has been sent to your account.\n\n` +
@@ -84,8 +82,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   });
 
   bot.action(/^p2p_refund_(.+)$/, async (ctx) => {
-    await ctx.telegram.sendMessage(
-  trade.telegram_id,
+    await ctx.answerCbQuery();
     const adminId = String(ctx.from.id);
     if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
 
@@ -99,7 +96,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
     trade.refunded_at = Date.now();
     await writeDB(db);
 
-    await bot.telegram.sendMessage(
+    await ctx.telegram.sendMessage(
       trade.telegram_id,
       `❌ *Trade Cancelled*\n\n` +
       `Your P2P cashout has been cancelled.\n` +

@@ -4,7 +4,7 @@
 
 const PROFIT_RATE = 0.054;
 const BOT_INJ_WALLET = "inj1t0gw53gp69z9yygdcqdr5399guwqzkyq76qnlz";
-const ADMIN_GROUP_ID = "-5236374074";
+const ADMIN_GROUP_ID = "-1003970109129";
 
 async function getInjNgnRate() {
   const res = await fetch(

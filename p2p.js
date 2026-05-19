@@ -244,7 +244,7 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
 
       // Notify both admins
       for (const adminId of ADMIN_IDS) {
-        await bot.telegram.sendMessage(
+        await ctx.telegram.sendMessage(
           adminId,
           `🔔 *New P2P Cashout Request*\n\n` +
           `👤 User: @${user.username || telegramId}\n` +

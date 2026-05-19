@@ -246,14 +246,14 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
         await ctx.telegram.sendMessage(
           adminId,
           `🔔 *New P2P Cashout Request*\n\n` +
-          `👤 User: @${user.username || telegramId}\n` +
+          `👤 User: ${user.username ? "@" + user.username.replace(/_/g, "\\_") : telegramId}\n` +
           `💰 INJ sold: *${amountInj} INJ*\n` +
           `💵 Naira to pay: *₦${nairaAmount.toLocaleString("en-NG", { maximumFractionDigits: 2 })}*\n\n` +
           `🏦 Bank: *${bankName}*\n` +
           `💳 Account No: *${accountNumber}*\n` +
           `👤 Account Name: *${accountName}*\n\n` +
           `🔗 Tx: https://explorer.injective.network/transaction/${txHash}\n` +
-          `🆔 Trade ID: \`${tradeId}\``,
+          `🆔 Trade ID: ${tradeId}`,
           {
             parse_mode: "Markdown",
             reply_markup: {

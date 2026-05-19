@@ -47,7 +47,8 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   });
 
   bot.action(/^p2p_paid_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+    await ctx.telegram.sendMessage(
+  trade.telegram_id,
     const adminId = String(ctx.from.id);
     if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
 
@@ -83,7 +84,8 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   });
 
   bot.action(/^p2p_refund_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+    await ctx.telegram.sendMessage(
+  trade.telegram_id,
     const adminId = String(ctx.from.id);
     if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
 

@@ -241,10 +241,9 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
         `Trade ID: \`${tradeId}\``
       );
 
-      // Notify both admins
-      for (const adminId of ADMIN_IDS) {
-        await ctx.telegram.sendMessage(
-          adminId,
+      // Notify admin group
+      await ctx.telegram.sendMessage(
+        ADMIN_GROUP_ID,
           `🔔 *New P2P Cashout Request*\n\n` +
           `👤 User: ${user.username ? "@" + user.username.replace(/_/g, "\\_") : telegramId}\n` +
           `💰 INJ sold: *${amountInj} INJ*\n` +
@@ -264,7 +263,6 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
             },
           }
         );
-      }
 
     } catch (e) {
       ctx.reply(`❌ Transaction failed: ${e.message}\n\nYour funds are safe — nothing was withdrawn.`);

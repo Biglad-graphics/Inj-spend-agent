@@ -529,10 +529,6 @@ bot.on("text", async (ctx) => {
 
   const telegramId = String(ctx.from.id);
 
-  // ── P2P flow (must be first) ─────────────────────────────────────────────────
-  const p2pHandled = await handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, sendInj });
-  if (p2pHandled) return;
-
   // ── Wallet naming flow ───────────────────────────────────────────────────────
   if (namingState[telegramId]) {
     const state = namingState[telegramId];
@@ -581,6 +577,10 @@ bot.on("text", async (ctx) => {
     }
   }
 
+  // ── P2P flow (must be first) ─────────────────────────────────────────────────
+  const p2pHandled = await handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, sendInj });
+  if (p2pHandled) return;
+  
   // ── PIN flow ─────────────────────────────────────────────────────────────────
   if (pinState[telegramId]) {
     const state = pinState[telegramId];

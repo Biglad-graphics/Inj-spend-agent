@@ -48,7 +48,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   bot.action(/^p2p_paid_(.+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const adminId = String(ctx.from.id);
-    if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
+    if (!["6090484839", "5675687939"].includes(adminId)) return ctx.reply("Not authorised.");
 
     const tradeId = ctx.match[1];
     const db = await readDB();
@@ -84,7 +84,7 @@ function registerP2PHandlers(bot, { readDB, writeDB, getActiveWallet, decrypt, s
   bot.action(/^p2p_refund_(.+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const adminId = String(ctx.from.id);
-    if (!ADMIN_IDS.includes(adminId)) return ctx.reply("Not authorised.");
+    if (!["6090484839", "5675687939"].includes(adminId)) return ctx.reply("Not authorised.");
 
     const tradeId = ctx.match[1];
     const db = await readDB();

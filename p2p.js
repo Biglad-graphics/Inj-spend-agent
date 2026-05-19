@@ -2,9 +2,9 @@
 // InjiPay — P2P Cashout Module (INJ → Naira)
 // ============================================================
 
-const PROFIT_RATE = 0.053;
+const PROFIT_RATE = 0.054;
 const BOT_INJ_WALLET = "inj1t0gw53gp69z9yygdcqdr5399guwqzkyq76qnlz";
-const ADMIN_IDS = ["5236374074"];
+const ADMIN_GROUP_ID = "-5236374074";
 
 async function getInjNgnRate() {
   const res = await fetch(

@@ -120,6 +120,12 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
 
   const text = ctx.message.text.trim();
 
+  // Exit P2P if user types a command or natural language
+  if (text.startsWith("/") || text.toLowerCase().startsWith("send ")) {
+    delete p2pState[telegramId];
+    return false;
+  }
+
   if (state.step === "await_amount") {
     const amount = parseFloat(text);
     if (isNaN(amount) || amount < 0.1) {
@@ -244,25 +250,25 @@ async function handleP2PText(ctx, { readDB, writeDB, getActiveWallet, decrypt, s
       // Notify admin group
       await ctx.telegram.sendMessage(
         ADMIN_GROUP_ID,
-          `🔔 *New P2P Cashout Request*\n\n` +
-          `👤 User: ${user.username ? "@" + user.username.replace(/_/g, "\\_") : telegramId}\n` +
-          `💰 INJ sold: *${amountInj} INJ*\n` +
-          `💵 Naira to pay: *₦${nairaAmount.toLocaleString("en-NG", { maximumFractionDigits: 2 })}*\n\n` +
-          `🏦 Bank: *${bankName}*\n` +
-          `💳 Account No: *${accountNumber}*\n` +
-          `👤 Account Name: *${accountName}*\n\n` +
-          `🔗 Tx: https://explorer.injective.network/transaction/${txHash}\n` +
-          `🆔 Trade ID: ${tradeId}`,
-          {
-            parse_mode: "Markdown",
-            reply_markup: {
-              inline_keyboard: [[
-                { text: "✅ Mark as Paid",  callback_data: `p2p_paid_${tradeId}`   },
-                { text: "❌ Cancel/Refund", callback_data: `p2p_refund_${tradeId}` },
-              ]],
-            },
-          }
-        );
+        `🔔 *New P2P Cashout Request*\n\n` +
+        `👤 User: ${user.username ? "@" + user.username.replace(/_/g, "\\_") : telegramId}\n` +
+        `💰 INJ sold: *${amountInj} INJ*\n` +
+        `💵 Naira to pay: *₦${nairaAmount.toLocaleString("en-NG", { maximumFractionDigits: 2 })}*\n\n` +
+        `🏦 Bank: *${bankName}*\n` +
+        `💳 Account No: *${accountNumber}*\n` +
+        `👤 Account Name: *${accountName}*\n\n` +
+        `🔗 Tx: https://explorer.injective.network/transaction/${txHash}\n` +
+        `🆔 Trade ID: ${tradeId}`,
+        {
+          parse_mode: "Markdown",
+          reply_markup: {
+            inline_keyboard: [[
+              { text: "✅ Mark as Paid",  callback_data: `p2p_paid_${tradeId}`   },
+              { text: "❌ Cancel/Refund", callback_data: `p2p_refund_${tradeId}` },
+            ]],
+          },
+        }
+      );
 
     } catch (e) {
       ctx.reply(`❌ Transaction failed: ${e.message}\n\nYour funds are safe — nothing was withdrawn.`);

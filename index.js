@@ -3,6 +3,7 @@
 // Stack: Telegraf + Injective SDK + Claude AI + node-cron + JSONbin
 // ============================================================
 
+initDB();
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { PrivateKey } = require("@injectivelabs/sdk-ts");
@@ -36,21 +37,7 @@ if (!BOT_TOKEN || !ANTHROPIC_API_KEY || !ENCRYPTION_KEY || !JSONBIN_KEY || !JSON
 }
 
 // ─── JSONbin ──────────────────────────────────────────────────────────────────
-async function readDB() {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-    headers: { "X-Master-Key": JSONBIN_KEY },
-  });
-  const json = await res.json();
-  return json.record || { users: {}, schedules: [], alerts: [], tx_log: [], one_time_sends: [], p2p_trades: [] };
-}
-
-async function writeDB(data) {
-  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY },
-    body: JSON.stringify(data),
-  });
-}
+const { initDB, readDB, writeDB } = require("./db");
 
 // ─── Encryption ───────────────────────────────────────────────────────────────
 const KEY = Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32));

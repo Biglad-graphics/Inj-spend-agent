@@ -13,6 +13,9 @@ const pool = new Pool({
 // Initialize database tables
 async function initDB() {
   try {
+    // Wait for connection to be ready
+    await pool.query("SELECT 1");
+    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         telegram_id TEXT PRIMARY KEY,
@@ -90,6 +93,7 @@ async function initDB() {
     console.log("✅ Database tables initialized");
   } catch (err) {
     console.error("Database init error:", err);
+    throw err;
   }
 }
 

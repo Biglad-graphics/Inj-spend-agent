@@ -179,12 +179,14 @@ Cron mappings:
 - "every 1st of the month" -> "0 9 1 * *"
 
 IMPORTANT RULES:
-- Amount is always a number in INJ. "2000 inj", "2000 INJ" all mean amount: 2000
+- Amount is always a number in INJ. "2000 inj", "0.5 INJ", "0.0027 inj" all parse to the exact decimal number provided. Accept any positive decimal amount, no minimum.
 - INJ addresses start with "inj1"
 - If user says "in X minutes/hours" or "at 9am tomorrow" = one_time_send, calculate send_at from current time
 - Only use schedule_send for clearly recurring patterns
 - Never return unknown for send, alert, or balance requests`;
+- For send commands with valid address and amount (any decimal > 0), ALWAYS return send_now/one_time_send/schedule_send. Do not return unknown.
 
+  
 async function parseIntent(userMessage) {
   try {
     const now = new Date().toISOString();

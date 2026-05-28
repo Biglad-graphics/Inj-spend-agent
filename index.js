@@ -3,7 +3,6 @@
 // Stack: Telegraf + Injective SDK + Claude AI + node-cron + JSONbin
 // ============================================================
 
-initDB();
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { PrivateKey } = require("@injectivelabs/sdk-ts");
@@ -813,7 +812,14 @@ async function loadSchedules() {
   registerAlertPoller(bot, { readDB });
 }
 
-loadSchedules();
-bot.launch().then(() => console.log("INJ Spend Agent is live!"));
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+async function start() {
+  await initDB();
+  loadSchedules();
+  await bot.launch();
+  console.log("INJ Spend Agent is live!");
+}
+
+start().catch((err) => {
+  console.error("Startup error:", err);
+  process.exit(1);
+});

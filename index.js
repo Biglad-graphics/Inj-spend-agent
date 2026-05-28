@@ -183,8 +183,8 @@ IMPORTANT RULES:
 - INJ addresses start with "inj1"
 - If user says "in X minutes/hours" or "at 9am tomorrow" = one_time_send, calculate send_at from current time
 - Only use schedule_send for clearly recurring patterns
-- Never return unknown for send, alert, or balance requests`;
-- For send commands with valid address and amount (any decimal > 0), ALWAYS return send_now/one_time_send/schedule_send. Do not return unknown.
+- Never return unknown for send, alert, or balance requests
+- For send commands with valid address and amount (any decimal > 0), ALWAYS return send_now/one_time_send/schedule_send. Do not return unknown.';
 
   
 async function parseIntent(userMessage) {
